@@ -1,0 +1,93 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  bookings  Bookings[]
+}
+
+model Hotels {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  location    String
+  rooms       Rooms[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Rooms {
+  id        String   @id @default(uuid())
+  hotelId   String
+  roomNumber String
+  type      String
+  price     Decimal @db.Decimal(10, 2)
+
+  expiresAt  DateTime?
+
+
+  hotel     Hotels   @relation(fields: [hotelId], references: [id])
+  bookings  Bookings[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+}
+
+model Bookings {
+  id       String   @id @default(uuid())
+  userId    String
+  roomId    String
+  startDate DateTime
+  endDate   DateTime
+
+  status   BookingStatus   @default(pending)
+
+  user      User     @relation(fields: [userId], references: [id])
+  room      Rooms    @relation(fields: [roomId], references: [id])
+  payment   Payments?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+}
+
+enum BookingStatus {
+  pending
+  confirmed
+  cancelled
+  expired
+}
+
+model Payments {
+  id        String   @id @default(uuid())
+  bookingId   String @unique
+  amount      Decimal @db.Decimal(10, 2)
+  paymentDate DateTime @default(now())
+  status      PaymentStatus @default(pending)
+
+  booking     Bookings @relation(fields: [bookingId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+enum PaymentStatus {
+  pending
+  success
+  failed
+  refunded
+}
