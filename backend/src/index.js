@@ -5,6 +5,7 @@ const hotelRouter = require("./routes/hotel.routes.js");
 const userRouter = require("./routes/user.routes.js");
 const roomRouter = require("./routes/room.routes.js");
 const bookingRouter = require("./routes/booking.routes.js");
+const paymentRouter = require("./routes/payment.routes.js");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -15,6 +16,7 @@ app.use("/v1/hotels", hotelRouter);
 app.use("/v1/users", userRouter);
 app.use("/v1/rooms", roomRouter);
 app.use("/v1/bookings", bookingRouter);
+app.use("/v1/payments", paymentRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
