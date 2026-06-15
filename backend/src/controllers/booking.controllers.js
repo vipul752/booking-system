@@ -18,37 +18,42 @@ const createBooking = async (req, res) => {
     }
 
     //check overlapping booking
+    await prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`
+    SELECT *
+    FROM "Rooms"
+    WHERE id = ${roomId}
+    FOR UPDATE
+  `;
 
-    const overlappingBooking = await prisma.bookings.findFirst({
-      where: {
-        roomId,
-        OR: [
-          {
-            startDate: { lte: new Date(endDate) },
-            endDate: { gte: new Date(startDate) },
+      const overlappingBooking = await tx.bookings.findFirst({
+        where: {
+          roomId,
+          status: {
+            in: ["pending", "confirmed"],
           },
-        ],
-      },
-    });
+          startDate: {
+            lt: new Date(endDate),
+          },
+          endDate: {
+            gt: new Date(startDate),
+          },
+        },
+      });
 
-    if (overlappingBooking) {
-      return res
-        .status(400)
-        .json({ error: "Room is already booked for the selected dates" });
-    }
+      if (overlappingBooking) {
+        throw new Error("Room already booked");
+      }
 
-    const booking = await prisma.bookings.create({
-      data: {
-        userId,
-        roomId,
-        startDate: new Date(startDate),
-        endDate: new Date(endDate),
-      },
-    });
-    res.status(201).json({
-      status: "pending",
-      expireAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes from now
-      booking,
+      return tx.bookings.create({
+        data: {
+          userId,
+          roomId,
+          startDate: new Date(startDate),
+          endDate: new Date(endDate),
+          status: "pending",
+        },
+      });
     });
   } catch (error) {
     res
