@@ -16,6 +16,24 @@ This backend is built to support a booking workflow where users can browse hotel
 - Make payments for bookings and issue refunds
 - Fetch payments by payment id or booking id
 
+## System Design Challenges Solved
+
+1. Double Booking Prevention
+   - Booking overlap detection
+   - PostgreSQL row-level locking
+
+2. Concurrency Testing
+   - Tested using autocannon with 100 concurrent users
+
+3. Overselling Prevention
+   - Ensured only one booking can be created for the same room and dates
+
+Upcoming
+
+- Double payment prevention
+- Payment success but booking fail
+- Recovery workers
+
 ## Tech Stack
 
 - Node.js

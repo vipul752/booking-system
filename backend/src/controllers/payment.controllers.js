@@ -27,7 +27,7 @@ const makePayment = async (req, res) => {
         .json({ error: "Payment already exists for this booking" });
     }
 
-    await prisma.$transaction(async (prisma) => {
+    const payment = await prisma.$transaction(async (prisma) => {
       await prisma.payments.create({
         data: {
           bookingId,
